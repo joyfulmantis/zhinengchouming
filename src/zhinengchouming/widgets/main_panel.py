@@ -103,9 +103,7 @@ class MainPanel(Panel):
                     self.setChoiceWithEvent(0)
                     self.Fit()
 
-                    self.mainMenu.enableScoreItem()
-                    self.mainMenu.enableSaveScores()
-                    self.mainMenu.enableCloseFile()
+                    self.mainMenu.fileOpenedEnable()
 
                     if(len(self.classCSV.fields) > 1):
                         self.mainMenu.enableGroupToIndividualItem()
@@ -142,10 +140,7 @@ class MainPanel(Panel):
             self.mainNameBox.loadScoreKeeper(None)
             self.secondaryNameBox.loadScoreKeeper(None)
             
-            self.mainMenu.disableScoreItem()
-            self.mainMenu.disableSaveScores()
-            self.mainMenu.disableGroupToIndividualItem()
-            self.mainMenu.disableCloseFile()
+            self.mainMenu.fileClosedDisable()
 
         except Exception as e:
             MessageBox(f"出现错误 \n {str(e)}",
@@ -227,6 +222,14 @@ class MainPanel(Panel):
         finally:
             del event
             CallAfter(self.parent.Destroy)
+
+    def resetCounter(self, event):
+        if(self.classCSV is not None):
+            self.classCSV.resetCounter()
+        if(self.mainNameBox.nameList is not None):
+            self.mainNameBox.nameList.resetCounter()
+        if(self.secondaryNameBox.nameList is not None):
+            self.secondaryNameBox.nameList.resetCounter()
 
     """Other functions"""
     def setChoiceWithEvent(self, id: int)-> None:
