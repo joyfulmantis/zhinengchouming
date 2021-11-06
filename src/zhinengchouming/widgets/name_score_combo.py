@@ -1,5 +1,7 @@
+from os import name
 from typing import Callable, List, Optional
 from wx import BoxSizer, HORIZONTAL, EVT_LEFT_DOWN, EVT_RIGHT_DOWN, SizerFlags, Timer
+from wx.core import ALIGN_CENTER, ALIGN_CENTRE_HORIZONTAL, ST_NO_AUTORESIZE
 from wx.lib.stattext import GenStaticText
 
 from models.name_list import NameList
@@ -10,7 +12,8 @@ class NameScoreCombo(BoxSizer):
                  parent, 
                  scoreKeeper: Optional[ScoreKeeper] = None, 
                  nameList: Optional[NameList] = None, 
-                 initialText: str = "你我他", 
+                 initialText: str = "？",
+                 intialTextExtent: str = "某某某",
                  initialScore: str = "0"):
 
         super().__init__(orient=HORIZONTAL)
@@ -24,7 +27,7 @@ class NameScoreCombo(BoxSizer):
 
         self.setLabelCallback: Optional[Callable] = None
 
-        self.textBox = GenStaticText(parent, label=initialText)
+        self.textBox = GenStaticText(parent, label=initialText, style=ALIGN_CENTER|ST_NO_AUTORESIZE)
 
         textBoxFont = self.textBox.GetFont()
         textBoxFont.PointSize = 60
@@ -32,9 +35,11 @@ class NameScoreCombo(BoxSizer):
         self.textBox.SetFont(font)
 
         self.textBox.Bind(EVT_LEFT_DOWN, self.newText)
+        self.textBox.SetInitialSize(self.textBox.GetTextExtent(intialTextExtent))
 
+        print(f"{self.textBox.GetCharHeight()} {self.textBox.GetCharWidth()} {self.textBox.GetClientSize()} {self.textBox.GetTextExtent('张天赐')}")
 
-        self.scoreBox = GenStaticText(parent, label=initialScore)
+        self.scoreBox = GenStaticText(parent, label=initialScore, )
 
         scoreBoxFont = self.scoreBox.GetFont()
         scoreBoxFont.PointSize = 40
@@ -89,6 +94,11 @@ class NameScoreCombo(BoxSizer):
 
         if(self.setLabelCallback is not None):
             self.setLabelCallback()
+
+    def setTextExtent(self, extent: str) -> None:
+        print(f"setTextExtent({extent})")
+        self.textBox.SetInitialSize(self.textBox.GetTextExtent(extent))
+        self.Fit()
 
     def loadNames(self, nameList: Optional[NameList]) -> None:
         if(self.nameList is not None and self.parent.classCSV is not None):

@@ -22,19 +22,25 @@ class ClassCSV:
 
         self.orderedList = self.fieldsPlus[1:] + self.dictOfKey[self.fields[0]]
 
-        self.calledCount = Counter([item for sublist in self.dictOfKey.values() for item in sublist])
-        self.calledCount = {k: 1 for k, v in self.calledCount.items()}
+        self.calledCount: Counter = Counter([item for sublist in self.dictOfKey.values() for item in sublist])
+        self.calledCount: Counter = Counter({k: 1 for k, v in self.calledCount.items()})
 
         self.filename = filename
         self.scoreKeeper = ScoreKeeper()
 
-    def returnListFor(self, key: str) -> NameList:
+    def returnNameListFor(self, key: str) -> NameList:
         names = self.dictOfKey[key]
         filteredCounter = Counter({k: v for k, v in self.calledCount.items() if k in names})
         return NameList(names, filteredCounter)
 
+    def returnListFor(self, key: str) -> List[str]:
+        return self.dictOfKey[key]
+
     def mergeCalledCounts(self, calledCount2: Counter) -> None:
         self.calledCount = self.calledCount | calledCount2
+    
+    def resetCounter(self) -> None:
+        self.calledCount: Counter = Counter({k: 1 for k, v in self.calledCount.items()})
 
 
 def makeDictOfKeys(nameField: str, listOfKeys: List, csvData: List[Dict]) -> Tuple[Dict, Dict]:
@@ -43,11 +49,15 @@ def makeDictOfKeys(nameField: str, listOfKeys: List, csvData: List[Dict]) -> Tup
 
     for key in listOfKeys:
         values = isolateValuesFor(key, csvData)
-        dictOfKeys[key] = values
         if(key is not nameField):
-            fieldsPlus[key] = (list(map(lambda x: f"{key}: {x}", values)))
+            modifiedValues = (list(map(lambda x: f"{key}: {x}", values)))
+            dictOfKeys[key] = modifiedValues
+            fieldsPlus[key] = modifiedValues
             for value in values:
                 dictOfKeys[f"{key}: {value}"] = isolateNamesFor(nameField, key, value, csvData)
+        else:
+            dictOfKeys[key] = values
+
     return fieldsPlus, dictOfKeys
 
 

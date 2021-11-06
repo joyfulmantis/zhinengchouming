@@ -24,3 +24,6 @@ class NameList:
         self.nameListCounter[name] += 1
         self.name = name
         return name
+
+    def resetCounter(self) -> None:
+        self.nameListCounter: Counter = Counter({k: 1 for k, v in self.nameListCounter.items()})

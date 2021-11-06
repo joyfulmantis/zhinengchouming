@@ -6,6 +6,7 @@ from csv import DictReader
 from typing import Optional
 
 from wx import Panel, EVT_CLOSE, BoxSizer, VERTICAL, HORIZONTAL, Size, EVT_BUTTON, Choice, EVT_CHOICE, SizerFlags, FileDialog, FD_OPEN, FD_FILE_MUST_EXIST, ID_CANCEL, MessageBox, ICON_ERROR, OK, FD_SAVE, FD_OVERWRITE_PROMPT, CallAfter, YES_NO, NO_DEFAULT, ICON_QUESTION, MessageDialog, ID_YES
+from wx.core import CommandEvent, PyCommandEvent, QueueEvent
 from wx.svg import SVGimage
 from wx.lib.buttons import GenBitmapButton
 
@@ -93,16 +94,14 @@ class MainPanel(Panel):
                         f"智能抽名 - '{fileDialog.GetFilename()}")
                     self.classCSV = ClassCSV(csvData, fileDialog.GetFilename())
 
-                    self.mainNameBox.loadNames(
-                        self.classCSV.returnListFor(self.classCSV.fields[0]))
-
                     self.mainNameBox.loadScoreKeeper(self.classCSV.scoreKeeper)
                     self.secondaryNameBox.loadScoreKeeper(
                         self.classCSV.scoreKeeper)
 
                     self.choices.Enable()
                     self.choices.Set(self.classCSV.fieldsPlus)
-                    self.choices.SetSelection(0)
+                    self.setChoiceWithEvent(0)
+                    self.Fit()
 
                     self.mainMenu.enableScoreItem()
                     self.mainMenu.enableSaveScores()
@@ -115,7 +114,7 @@ class MainPanel(Panel):
                                 "Error",
                                 OK | ICON_ERROR)
             except Exception as e:
-                MessageBox("出现错误 \n {str(e)}",
+                MessageBox(f"出现错误 \n {str(e)}",
                                         "Error",
                                         OK | ICON_ERROR)
 
@@ -149,7 +148,7 @@ class MainPanel(Panel):
             self.mainMenu.disableCloseFile()
 
         except Exception as e:
-            MessageBox("出现错误 \n {str(e)}",
+            MessageBox(f"出现错误 \n {str(e)}",
                                     "Error",
                                     OK | ICON_ERROR)
 
@@ -180,9 +179,23 @@ class MainPanel(Panel):
                                     OK | ICON_ERROR)
 
     def selectChoice(self, event) -> None:
+        choice = event.GetString()
+
         if(self.classCSV is not None):
             self.mainNameBox.loadNames(
-                self.classCSV.returnListFor(event.GetString()))
+                self.classCSV.returnNameListFor(choice))
+            if(self.enableGroupToIndividual):
+                fullList = []
+                intialList = self.classCSV.returnListFor(choice)
+                for item in intialList:
+                    fullList.append(item)
+                    fullList.extend(self.classCSV.returnListFor(item))
+                textExtent: str = max(fullList, key=len)
+            else:
+                intialList = self.classCSV.returnListFor(choice)
+                textExtent: str= max(intialList, key=len)
+            self.mainNameBox.setTextExtent(textExtent)
+            self.secondaryNameBox.setTextExtent(textExtent)
 
     def menuButton(self, event) -> None:
         self.PopupMenu(self.mainMenu)
@@ -204,9 +217,7 @@ class MainPanel(Panel):
                 self.choices.Set(self.classCSV.fieldsPlus)
                 self.mainNameBox.defineSetLabelCallback(None)
 
-            self.choices.SetSelection(0)
-            self.mainNameBox.loadNames(
-                self.classCSV.returnListFor(self.choices.GetString(0)))
+            self.setChoiceWithEvent(0)
 
             self.secondaryNameBox.toggle()
 
@@ -218,6 +229,11 @@ class MainPanel(Panel):
             CallAfter(self.parent.Destroy)
 
     """Other functions"""
+    def setChoiceWithEvent(self, id: int)-> None:
+        self.choices.SetSelection(id)
+        event = PyCommandEvent(eventType=EVT_CHOICE.typeId, id=self.choices.GetId())
+        event.SetString(self.choices.GetString(id))
+        QueueEvent(self.GetEventHandler(), event)
 
     def promptSaveScores(self) -> None:
         with MessageDialog(
@@ -231,7 +247,7 @@ class MainPanel(Panel):
     def callSecondaryBox(self) -> None:
         if(self.classCSV is not None):
             self.secondaryNameBox.loadNames(
-                self.classCSV.returnListFor(self.mainNameBox.getCurrentLabel()))
+                self.classCSV.returnNameListFor(self.mainNameBox.getCurrentLabel()))
             self.secondaryNameBox.newText()
 
     def Fit(self):
