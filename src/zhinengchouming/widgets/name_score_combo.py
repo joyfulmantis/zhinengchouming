@@ -37,8 +37,6 @@ class NameScoreCombo(BoxSizer):
         self.textBox.Bind(EVT_LEFT_DOWN, self.newText)
         self.textBox.SetInitialSize(self.textBox.GetTextExtent(intialTextExtent))
 
-        print(f"{self.textBox.GetCharHeight()} {self.textBox.GetCharWidth()} {self.textBox.GetClientSize()} {self.textBox.GetTextExtent('张天赐')}")
-
         self.scoreBox = GenStaticText(parent, label=initialScore, )
 
         scoreBoxFont = self.scoreBox.GetFont()
@@ -96,7 +94,6 @@ class NameScoreCombo(BoxSizer):
             self.setLabelCallback()
 
     def setTextExtent(self, extent: str) -> None:
-        print(f"setTextExtent({extent})")
         self.textBox.SetInitialSize(self.textBox.GetTextExtent(extent))
         self.Fit()
 

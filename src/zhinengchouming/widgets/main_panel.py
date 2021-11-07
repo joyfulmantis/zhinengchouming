@@ -169,7 +169,7 @@ class MainPanel(Panel):
                                     "Error",
                                     OK | ICON_ERROR)
                 except Exception as e:
-                                MessageBox("出现错误 \n {str(e)}",
+                                MessageBox(f"出现错误 \n {str(e)}",
                                     "Error",
                                     OK | ICON_ERROR)
 
@@ -191,6 +191,7 @@ class MainPanel(Panel):
                 textExtent: str= max(intialList, key=len)
             self.mainNameBox.setTextExtent(textExtent)
             self.secondaryNameBox.setTextExtent(textExtent)
+            self.secondaryNameBox.resetLabel()
 
     def menuButton(self, event) -> None:
         self.PopupMenu(self.mainMenu)
